@@ -8,7 +8,14 @@ const User=new schema({
     phone:Number,
     password:String,
     collage:String,
-    passingyear:Number
+    passingyear:Number,
+    fullstack:String,
+    master:String,
+    mock:[
+        {
+            mockId:{type: mongoose.Schema.Types.ObjectId,ref:'Mock'}
+    }]
+
 
 })
 

@@ -3,6 +3,75 @@ const jwt = require('jsonwebtoken')
 const User=require('../model/User')
 const Mock = require('../model/Mock')
 const mockdata=require('../mockdata')
+const Mentor=require('../model/Mentor')
+  const data=require('../Data')
+  const Razorpay = require('razorpay')
+
+  const razorpay = new Razorpay({
+      key_id: 'rzp_test_8gAAcZx74kP2Zm',
+      key_secret: 'kBRDHOma9uI4kGttNxfyxFYd',
+  })
+
+  async function RazorPay(req, res) {
+
+    const amount=req.body.amount
+
+    const options = {
+        amount:amount,
+        currency: 'INR',
+        receipt: 'dhirajsakore@gmail.com',
+      
+    }
+
+    try {
+        const response = await razorpay.orders.create(options);
+        res.send({
+            success:true,
+            msg:'Order Created',
+            order_id:response.id,
+            amount:options.amount,
+            key_id:'rzp_test_8gAAcZx74kP2Zm'
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+
+  async function mentoradd(req,res){
+    try {
+     
+     
+        const user = await Mentor.create(data)
+      
+        res.status(200).send({msg:"user register Sucessfully" ,user:user })
+
+
+    }
+
+    catch (e) {
+        console.log(e)
+        res.status(500).send({ msg: "not created ", err: e })
+    }
+}
+async function mentordata(req,res){
+    try {
+     
+     
+        const user = await Mentor.find()
+      
+        res.status(200).send({msg:"user register Sucessfully" ,user:user })
+
+
+    }
+
+    catch (e) {
+        console.log(e)
+        res.status(500).send({ msg: "not created ", err: e })
+    }
+}
+  
 async function register(req,res){
     try {
         const temp = req.body
@@ -27,6 +96,9 @@ async function register(req,res){
         res.status(500).send({ msg: "not created ", err: e })
     }
 }
+
+
+
 
 async function loginUser(req, res) {
     try {
@@ -76,10 +148,20 @@ async function createmock(req,res){
     }
 }
 
-async function mocktests(req,res){
+async function Addtodashbord(req,res){
     try {
-       const mock= await Mock.find()
-        res.status(200).send({msg:"send sucessfully" , mock:mock})
+       const details=req.body
+       const find= await User.findOne({_id:details.userId,'mock.mockId':details.Id})
+
+       if(find){
+        res.send({msg:'test is already exist'})
+       }
+       else{
+        await User.updateOne({_id:details.userId},{$push:{mock:{mockId:details.Id}}})
+        res.send({msg:'text added sucessfully'})
+
+       }
+
 
 
     }
@@ -90,4 +172,79 @@ async function mocktests(req,res){
     }
 }
 
-module.exports={register,loginUser,createmock,mocktests}
+async function Fullstack(req,res){
+    try {
+
+    const details=req.body
+    const find= await User.findOne({_id:details.userId,'fullstack':details.name})
+
+    if(!find){
+        await User.updateOne({_id:details.userId},{fullstack:details.name})
+        res.send({msg:"program added"})
+    }
+    else{
+        res.send({msg:"program already exist"})
+    }
+
+
+       }
+    catch (e) {
+        console.log(e)
+        res.status(500).send({ msg: "not created ", err: e })
+    }
+}
+
+async function Master(req,res){
+    try {
+
+    const details=req.body
+    const find= await User.findOne({_id:details.userId,'master':details.name})
+
+    if(!find){
+        await User.updateOne({_id:details.userId},{master:details.name})
+        res.send({msg:"program added"})
+    }
+    else{
+        res.send({msg:"program already exist"})
+    }
+
+
+       }
+    catch (e) {
+        console.log(e)
+        res.status(500).send({ msg: "not created ", err: e })
+    }
+}
+
+async function Dashboard(req,res){
+    try {
+        const details=req.body
+        const populate=  await User.findById(details.userId)
+        .populate('mock.mockId')
+        res.send(populate)
+
+    }
+
+    catch (e) {
+        console.log(e)
+        res.status(500).send({ msg: "not created ", err: e })
+    }
+}
+
+
+async function mocktests(req,res){
+            try {
+               const mock= await Mock.find()
+                res.status(200).send({msg:"send sucessfully" , mock:mock})
+        
+        
+            }
+        
+            catch (e) {
+                console.log(e)
+                res.status(500).send({ msg: "not created ", err: e })
+            }
+}
+        
+
+module.exports={register,loginUser,createmock,mocktests,mentoradd,mentordata,RazorPay,Addtodashbord,Fullstack,Master,Dashboard}
